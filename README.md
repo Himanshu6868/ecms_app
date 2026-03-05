@@ -76,6 +76,12 @@ npm run start
 
 Configure Firebase via Expo public env vars:
 
+```bash
+cp .env.example .env
+```
+
+Then fill/update these keys in `.env`:
+
 - `EXPO_PUBLIC_FIREBASE_API_KEY`
 - `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
