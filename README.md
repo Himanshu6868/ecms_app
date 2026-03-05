@@ -88,3 +88,18 @@ Then fill/update these keys in `.env`:
 - `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`
 - `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 - `EXPO_PUBLIC_FIREBASE_APP_ID`
+
+## Troubleshooting Firebase `400 Bad Request` on startup
+
+If the app does not open and browser/network logs show a failed request like:
+
+`https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig?key=...`
+
+this almost always means Firebase web credentials are invalid for the current project/environment.
+
+Quick checks:
+
+1. Ensure `.env` exists (not just `.env.example`) and contains real values from **Firebase Console → Project settings → Your apps (Web app)**.
+2. Confirm `EXPO_PUBLIC_FIREBASE_API_KEY`, `EXPO_PUBLIC_FIREBASE_PROJECT_ID`, and `EXPO_PUBLIC_FIREBASE_APP_ID` all belong to the same Firebase project.
+3. If API key restrictions are enabled in Google Cloud, allow **Identity Toolkit API** for that key (or temporarily remove restrictions while testing).
+4. Restart Expo after changing env vars (`npm run start`), because Expo reads env values at startup time.

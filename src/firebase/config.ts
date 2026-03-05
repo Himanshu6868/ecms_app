@@ -12,16 +12,42 @@ const requireFirebaseEnv = (name: string, value: string | undefined) => {
   return value;
 };
 
+const assertNotPlaceholder = (name: string, value: string) => {
+  const placeholderPatterns = ['DemoKeyForDevelopment', 'your-', 'example', 'changeme'];
+  if (placeholderPatterns.some((pattern) => value.toLowerCase().includes(pattern.toLowerCase()))) {
+    throw new Error(
+      `Firebase configuration ${name} still has a placeholder value. Add real Firebase credentials to .env before starting the app.`
+    );
+  }
+
+  return value;
+};
+
 const firebaseConfig = {
-  apiKey: requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_API_KEY', process.env.EXPO_PUBLIC_FIREBASE_API_KEY),
-  authDomain: requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN),
-  projectId: requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_PROJECT_ID', process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID),
-  storageBucket: requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET),
-  messagingSenderId: requireFirebaseEnv(
-    'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+  apiKey: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_API_KEY',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_API_KEY', process.env.EXPO_PUBLIC_FIREBASE_API_KEY)
   ),
-  appId: requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_APP_ID', process.env.EXPO_PUBLIC_FIREBASE_APP_ID),
+  authDomain: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN)
+  ),
+  projectId: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_PROJECT_ID', process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID)
+  ),
+  storageBucket: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET)
+  ),
+  messagingSenderId: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID)
+  ),
+  appId: assertNotPlaceholder(
+    'EXPO_PUBLIC_FIREBASE_APP_ID',
+    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_APP_ID', process.env.EXPO_PUBLIC_FIREBASE_APP_ID)
+  ),
 };
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
