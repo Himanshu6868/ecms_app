@@ -1,50 +1,84 @@
-# Welcome to your Expo app 👋
+# ECMS Mobile (Expo + TypeScript)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Production-grade Enterprise Case Management System mobile foundation using **Expo managed workflow**, **React Navigation**, **Zustand**, **Firebase Auth**, **Firestore**, **Firebase Storage**, **Expo Notifications + FCM**, and **Cloud Functions**.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Initialization
 
 ```bash
-npm run reset-project
+npx create-expo-app ecms-mobile -t expo-template-blank-typescript
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+This repository has been aligned to that baseline and expanded with enterprise architecture.
 
-## Learn more
+## Architecture
 
-To learn more about developing your project with Expo, look at the following resources:
+```text
+src/
+  api/
+  components/
+  firebase/
+  hooks/
+  modules/
+    auth/
+    cases/
+    documents/
+    notifications/
+    reports/
+    users/
+  navigation/
+  services/
+  store/
+  types/
+  utils/
+firebase/
+  firestore.rules
+  storage.rules
+  functions/
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Core Modules Implemented
 
-## Join the community
+- Authentication: email/password and Google sign-in hooks (`src/modules/auth`, `src/services/auth.service.ts`).
+- Case management: list/details/create/assign screens and services (`src/modules/cases`, `src/services/case.service.ts`).
+- Notifications: Expo push registration service (`src/services/notification.service.ts`).
+- Document management: image/document picker + Firebase storage uploader (`src/services/document.service.ts`).
+- Reporting/dashboard: KPI dashboard screen (`src/modules/reports/dashboard.screen.tsx`).
+- Role management and SLA policy constants (`src/utils/constants.ts`).
 
-Join our community of developers creating universal apps.
+## Firestore Collections
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `users`
+- `cases`
+- `case_comments`
+- `case_files`
+- `audit_logs`
+- `notifications`
+
+## Security
+
+- Firestore RBAC and scoped read/write in `firebase/firestore.rules`.
+- Storage upload limits and authenticated-only access in `firebase/storage.rules`.
+- Callable and scheduled Cloud Functions validate authentication before privileged operations.
+
+## Scalability Notes (500+ concurrent users)
+
+- Firestore document-oriented model with targeted queries and indexed access patterns.
+- Assignment and SLA logic moved to Cloud Functions for centralized control.
+- Zustand local state slices isolate updates and reduce unnecessary re-renders.
+- Notification + audit flows are append-only and horizontally scalable in Firestore.
+
+## Run
+
+```bash
+npm install
+npm run start
+```
+
+Configure Firebase via Expo public env vars:
+
+- `EXPO_PUBLIC_FIREBASE_API_KEY`
+- `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
+- `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `EXPO_PUBLIC_FIREBASE_APP_ID`
