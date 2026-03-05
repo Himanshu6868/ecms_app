@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasRole(roles) {
+      return isSignedIn() && request.auth.token.role in roles;
+    }
+
+    function isCaseParticipant(caseDoc) {
+      return caseDoc.data.createdBy == request.auth.uid || caseDoc.data.assignedAgentId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if request.auth.uid == userId || hasRole(['SystemAdministrator']);
+    }
+
+    match /cases/{caseId} {
+      allow create: if hasRole(['SystemAdministrator', 'CaseManager', 'Reporter']);
+      allow read: if hasRole(['SystemAdministrator', 'Auditor', 'Supervisor', 'CaseManager']) || isCaseParticipant(resource);
+      allow update: if hasRole(['SystemAdministrator', 'CaseManager', 'Supervisor']) || (
+        hasRole(['CaseAgent']) && isCaseParticipant(resource)
+      );
+    }
+
+    match /case_comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if hasRole(['SystemAdministrator', 'CaseManager', 'CaseAgent', 'Supervisor', 'Reporter']);
+    }
+
+    match /case_files/{fileId} {
+      allow read: if isSignedIn();
+      allow create: if hasRole(['SystemAdministrator', 'CaseManager', 'CaseAgent', 'Supervisor', 'Reporter']);
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if hasRole(['SystemAdministrator', 'Auditor']);
+      allow write: if hasRole(['SystemAdministrator']) || request.auth.token.system == true;
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if request.auth.token.system == true;
+    }
+  }
+}
