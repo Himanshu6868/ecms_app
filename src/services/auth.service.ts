@@ -1,25 +1,26 @@
 import * as SecureStore from 'expo-secure-store';
-import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '../firebase/config';
+// import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+// import { auth } from '../firebase/config';
 
 const SESSION_KEY = 'ecms_session_uid';
 
 export const authService = {
   async loginWithEmail(email: string, password: string) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    await SecureStore.setItemAsync(SESSION_KEY, cred.user.uid);
-    return cred.user;
+    // Firebase login temporarily disabled.
+    const mockUid = `${email}:${password}`;
+    await SecureStore.setItemAsync(SESSION_KEY, mockUid);
+    return { uid: mockUid };
   },
 
   async loginWithGoogle(idToken: string, accessToken: string) {
-    const providerCredential = GoogleAuthProvider.credential(idToken, accessToken);
-    const cred = await signInWithCredential(auth, providerCredential);
-    await SecureStore.setItemAsync(SESSION_KEY, cred.user.uid);
-    return cred.user;
+    // Firebase Google login temporarily disabled.
+    const mockUid = `${idToken}:${accessToken}`;
+    await SecureStore.setItemAsync(SESSION_KEY, mockUid);
+    return { uid: mockUid };
   },
 
   async logout() {
-    await signOut(auth);
+    // Firebase sign-out temporarily disabled.
     await SecureStore.deleteItemAsync(SESSION_KEY);
   },
 };

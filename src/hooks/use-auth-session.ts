@@ -1,6 +1,4 @@
 import { useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase/config';
 import { useAuthStore } from '../store/auth.store';
 
 export const useAuthSession = () => {
@@ -8,11 +6,11 @@ export const useAuthSession = () => {
   const setLoading = useAuthStore((state) => state.setLoading);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setFirebaseUser(user);
-      setLoading(false);
-    });
+    // Firebase auth listener temporarily disabled so the app can render UI
+    // without Firebase environment variables configured.
+    setFirebaseUser(null);
+    setLoading(false);
 
-    return unsubscribe;
+    return undefined;
   }, [setFirebaseUser, setLoading]);
 };
