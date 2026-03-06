@@ -4,55 +4,52 @@ import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 
-const requireFirebaseEnv = (name: string, value: string | undefined) => {
+const assertNotPlaceholder = (name: string, value: string | undefined) => {
   if (!value) {
-    throw new Error(`Missing Firebase configuration: ${name}. Add it to your Expo env file (for example .env).`);
+    return `${name} is missing.`;
   }
 
-  return value;
-};
-
-const assertNotPlaceholder = (name: string, value: string) => {
   const placeholderPatterns = ['DemoKeyForDevelopment', 'your-', 'example', 'changeme'];
   if (placeholderPatterns.some((pattern) => value.toLowerCase().includes(pattern.toLowerCase()))) {
-    throw new Error(
-      `Firebase configuration ${name} still has a placeholder value. Add real Firebase credentials to .env before starting the app.`
-    );
+    return `${name} still has a placeholder value.`;
   }
 
-  return value;
+  return null;
 };
 
-const firebaseConfig = {
-  apiKey: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_API_KEY',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_API_KEY', process.env.EXPO_PUBLIC_FIREBASE_API_KEY)
-  ),
-  authDomain: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN)
-  ),
-  projectId: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_PROJECT_ID', process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID)
-  ),
-  storageBucket: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET)
-  ),
-  messagingSenderId: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID)
-  ),
-  appId: assertNotPlaceholder(
-    'EXPO_PUBLIC_FIREBASE_APP_ID',
-    requireFirebaseEnv('EXPO_PUBLIC_FIREBASE_APP_ID', process.env.EXPO_PUBLIC_FIREBASE_APP_ID)
-  ),
+const validationErrors = [
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_API_KEY', process.env.EXPO_PUBLIC_FIREBASE_API_KEY),
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN', process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_PROJECT_ID', process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID),
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET),
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+  assertNotPlaceholder('EXPO_PUBLIC_FIREBASE_APP_ID', process.env.EXPO_PUBLIC_FIREBASE_APP_ID),
+].filter((value): value is string => Boolean(value));
+
+const firebaseConfigError = validationErrors.length
+  ? `Firebase is not configured: ${validationErrors.join(' ')}`
+  : null;
+
+const firebaseConfig = firebaseConfigError
+  ? null
+  : {
+      apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY!,
+      authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+      projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID!,
+      storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+      messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+      appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID!,
+    };
+
+const app = firebaseConfig ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : null;
+
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+export const storage = app ? getStorage(app) : null;
+export const functions = app ? getFunctions(app) : null;
+
+export const ensureFirebaseConfigured = () => {
+  if (!app) {
+    throw new Error(firebaseConfigError ?? 'Firebase is not configured.');
+  }
 };
-
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const functions = getFunctions(app);

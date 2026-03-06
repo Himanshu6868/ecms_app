@@ -1,5 +1,5 @@
 import { Timestamp, addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db, ensureFirebaseConfigured } from '../firebase/config';
 import { SLA_POLICY_MINUTES } from '../utils/constants';
 import type { CasePriority, CaseRecord, CaseStatus } from '../types';
 
@@ -14,9 +14,10 @@ const computeDueDates = (priority: CasePriority) => {
 
 export const caseService = {
   async createCase(caseInput: Omit<CaseRecord, 'caseId' | 'createdAt' | 'updatedAt' | 'status' | 'responseDueAt' | 'resolutionDueAt' | 'escalated'>) {
+    ensureFirebaseConfigured();
     const { responseDueAt, resolutionDueAt } = computeDueDates(caseInput.priority);
 
-    return addDoc(collection(db, 'cases'), {
+    return addDoc(collection(db!, 'cases'), {
       ...caseInput,
       status: 'Open' satisfies CaseStatus,
       responseDueAt,
@@ -28,7 +29,9 @@ export const caseService = {
   },
 
   async updateCase(caseId: string, patch: Partial<CaseRecord>) {
-    return updateDoc(doc(db, 'cases', caseId), {
+    ensureFirebaseConfigured();
+
+    return updateDoc(doc(db!, 'cases', caseId), {
       ...patch,
       updatedAt: serverTimestamp(),
     });
