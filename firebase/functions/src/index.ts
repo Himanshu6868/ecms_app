@@ -11,7 +11,7 @@ const SLA_BY_PRIORITY = {
   Low: { responseMins: 240, resolutionMins: 10080 },
 } as const;
 
-export const assignCaseIntelligently = functions.https.onCall(async (data, context) => {
+export const assignCaseIntelligently = functions.https.onCall(async (data: any, context: any) => {
   if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Auth required');
 
   const { caseId, category } = data;
@@ -47,7 +47,7 @@ export const monitorSla = functions.pubsub.schedule('every 5 minutes').onRun(asy
 
   const batch = db.batch();
 
-  nearBreachSnap.docs.forEach((doc) => {
+  nearBreachSnap.docs.forEach((doc: any) => {
     const caseData = doc.data();
     const policy = SLA_BY_PRIORITY[caseData.priority as keyof typeof SLA_BY_PRIORITY];
     const escalationThreshold = now.toMillis() + Math.floor(policy.responseMins * 0.8) * 60 * 1000;
